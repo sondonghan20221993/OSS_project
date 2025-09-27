@@ -4,5 +4,7 @@
 ### 프로젝트 주제
 - AI의 학습이미지를 변형시켜 정확도에 얼마나 영향을 끼칠까?
 
+[오픈소스프로그래밍프로젝트_설명.pptx](https://github.com/user-attachments/files/22571498/_.pptx)
+
 ### 협업도구
 (노션참여링크)[https://www.notion.so/invite/d5381a16754856a7cb29a3564de00411e8988076]
