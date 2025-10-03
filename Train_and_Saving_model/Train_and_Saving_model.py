@@ -67,6 +67,12 @@ best_acc = 0.0
 num_epochs = 10
 save_path = "best_model.pth"
 
+#지능형 리스트로 미리 할당
+train_loss_list = [None for _ in range(num_epochs)]
+train_acc_list = [None for _ in range(num_epochs)]
+val_loss_list = [None for _ in range(num_epochs)]
+val_acc_list = [None for _ in range(num_epochs)] 
+
 for epoch in range(num_epochs):
     print(f"\nEpoch [{epoch+1}/{num_epochs}]")
 
@@ -109,11 +115,36 @@ for epoch in range(num_epochs):
 
     print(f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc:.4f}")
     print(f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc:.4f}")
-
+    #해야할것 (결과시각화를 위한 값 저장)----------------------------------------
+    """
+    해당 에포크(반복횟수에)
+    train_loss, val  #학습 손실, 정확도
+    val_loss, val #평가 손실, 정확도
+    이 임시변수로 저장되어있다.
+    이것을 train_loss_list ..으로 만들어놓은 저장공간에 넣어보자
+    ex)
+    train_loss_list[num_epochs] = train loss #이렇게하면 해당 반복횟수의 값을 리스트에 넣는다.
+    
+    """
     # ---- Save Best Model ----
     if val_acc > best_acc:
         best_acc = val_acc
         torch.save(model.state_dict(), save_path)
         print(f"✅ 모델 저장됨: {save_path}")
+#해야할것 (결과시각화)----------------------------------------
+"""
+matplotlib함수를 이용해서 
+train_loss_lsit, train_acc_list, val_loss_lsit, val_acc_lsit
 
+fig = plt.figure()
+plt.plot(list([n for n in range(1, num_epochs+1)]), list(value for value in train_loss_list),marker='o', linestyle='-', label="train_loss") 
+plt.legend()
+plt.show()
+#n for n in range(1, num_epochs+1)로 반복횟쉬 x축으로 지정
+#train_loss_list값을 반복문으로 꺼냄
+
+이러한 형식으로 train_acc_list, val모두 plot을 이용해서 그리자
+
+
+"""
 print(f"\n🎯 학습 완료! 최고 정확도: {best_acc:.4f}")

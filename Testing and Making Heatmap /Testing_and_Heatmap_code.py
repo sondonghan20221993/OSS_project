@@ -6,13 +6,16 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
+import matplotlib as plt
 
 # ---------------------
 # 1. 데이터셋 불러오기
 # ---------------------
 test_dir = "dataset/test"  # 테스트 데이터 폴더
-save_dir = "wrong_heatmaps"
-os.makedirs(save_dir, exist_ok=True)
+save_wrong_dir = "wrong_heatmaps"
+save_correct_dir = "correct_heatmap"
+os.makedirs(save_wrong_dir, exist_ok=True)
+os.makedirs(save_correct_dir, exist_ok=True)
 
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
@@ -73,12 +76,17 @@ grad_cam = GradCAM(model, target_layer)
 # ---------------------
 # 4. 테스트셋 평가 & 잘못된 샘플 저장
 # ---------------------
-for idx, (image, label) in enumerate(test_loader):
+number_class = len(classes) #라벨 갯수 저장
+correct_list = [0 for i in range(number_class)]  #맞은 것 개수세기 위한 리스트
+worng_list = [0 for i in range(number_class)] #틀린 것 개수세기 위한 리스트
+
+for idx, (image, label) in enumerate(test_loader): 
     image, label = image.to(device), label.to(device)
     output = model(image)
     pred = output.argmax(1)
 
     if pred != label:  # 틀린 경우만 저장
+        worng_list[label] +=1 #잘못된 곳 카운트
         # Grad-CAM 생성
         model.zero_grad()
         class_idx = pred.item()
@@ -99,7 +107,46 @@ for idx, (image, label) in enumerate(test_loader):
 
         # 저장
         filename = f"{idx}_true-{classes[label.item()]}_pred-{classes[pred.item()]}.png"
-        save_path = os.path.join(save_dir, filename)
+        save_path = os.path.join(save_wrong_dir, filename)
         Image.fromarray((overlay * 255).astype(np.uint8)).save(save_path)
+    else: #맞은경우
+        correct_list[label] += 1
 
-print(f"✅ 잘못 예측된 샘플 히트맵 저장 완료 → {save_dir}")
+    #해야할것_(히트맵 제작)   
+    """
+    위 조건은 예측과 답이 틀릴시 즉 오답일시 처리를 하는 함수이다.
+    근데 우리는 라벨별 5개정도 맞는것도 어떻게 판단했는지 확인을 하고싶다.
+    elif으로 pred == label이면 예측과 라벨이 맞을경우 즉 맞을경우 이며
+    이 조건과 
+    ex) 이진분류시(2개만 구분) -> label이 0 또는 1이다. (0이 가짜 이미지, 1이 진짜이미지이다.)
+    그러니[0, 0]리스트가 만들어진다
+    그리고 정답일시 0이면 -> [1, 0] 
+    다음 정답시 또 0이면 -> [2, 0]
+    다음 정답시 1이면 -> [2, 1]
+    이런식으로 어느게 몇번 저장되었는지 확인해 본다.
+    그리고 [5,4] 가 되었다고 가정하면
+    다음정답이 0이면 5이상이기에 더이상 저장 할 이유가 없는것이다.
+    이러한 조건을 추가해
+
+    -> 정답이면서 그 label(정답값)이 5 이하일경우 gradcam을 생성하는걸로 해보자(생성은 위 코드 복사하면됨)
+    저장경로는 위 코드에서 save_wrong_dir이 아니라 save_correct_dir이다.
+
+
+    """
+
+print(f"✅ 잘못 예측된 샘플 히트맵 저장 완료 → {save_wrong_dir}")
+print(f"✅ 정확하게 예측된 샘플 히트맵 저장 완료 → {save_correct_dir}")
+
+#해야할것_(시각화 파트)
+"""
+위 과정에서 
+정답 리스트에 각각 맞은갯수를 리스트에 저장했다 (correct_list)
+오답 리스트에 각각 틀린갯수를 리스트에 저장했다 (wrong_list)
+
+이것을 barplot으로 그려서 틀린 비율을 알아보자
+ 
+x축은 classes(df(deepfake), real) 로 하며
+y_1축은 x축별 맞은개수
+y_2축은 x축별 틀린개수 이다.
+누적 bar plot으로 그려보자
+"""
