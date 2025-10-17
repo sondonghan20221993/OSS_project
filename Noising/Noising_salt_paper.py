@@ -12,25 +12,20 @@ def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     img = img.astype(np.float32) / 255.0  
 
     # 랜덤픽셀 소금, 후추 노이즈(0 아니면 255)
-    noisy_img = img 
-    """
-    해야할것 noise_level만큼  소금, 후추 잡음을 적용 시키는것이다. ex-> noise_level = 0.1이면 10%센트로 적용을 시키는것 -> 20 * 20이미지라면 총 픽셀수는 1000개 그러므로 100개만 적용시키면 된다.(R, G, B) 3개의 채널이 400개씩 가지고 있다.
-    choice 함수로 [0, 1] #아얘 흑백이거나, 아얘 밝게 바꾸는것이다.
+    noisy_img = img.copy() # 원본 이미지 무수정 복사
 
-    그래서 위 예시로 40픽셀을 바꿔야하면 
-    for i in range(40):으로 40번 반복 
-    img(높이, 너비, 채널)이다.
-        컬러 이미지이므로 채널의 범위는 0,1,2(R,G,B) 3개이다.
-        
-        결론: height, width, chanel 
-        img.shape로 모두 알수있다.
-        
-        그걸로 각 범위를 지정해 choice로 골라주자. ex) -> (20,30,3) =  높이 20픽셀 너비 30픽셀 채널 3   choice([0:19])로 높이, choice([0:29])로 너비, choice([0:2]) 채널을 랜덤 변수로 뽑아
-        img[랜덤높이, 랜덤너비, 랜덤채널] = choice([0,255])로 하면
+    height, width = noisy_img.shape[:2]
+    # noise_level 비율만큼 노이즈 개수 계산
+    num_noise_pixels = int(height * width * noise_level)
+    
+    for _ in range(num_noise_pixels):
+        #픽셀 좌표 랜덤 선택
+        y = np.random.randint(0, height)
+        x = np.random.randint(0, width)
 
-    120개의 무작위 픽셀을 검은색 OR 흰색으로 바꾸게 된다. 이 바꾼값을  return 시켜보자
-
-    """
+        # 검흰 노이즈 적용
+        # np.random.choice([0, 1]) 0, 1을 무작위 선택
+        noisy_img[y, x] = np.random.choice([0, 1])
     
     # [min_val, max_val] 범위로 클리핑
     noisy_img = np.clip(noisy_img, min_val, max_val)
@@ -63,3 +58,4 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 input_dir = "dataset"          # 원본 폴더
 output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
 apply_noise_to_dataset(input_dir, output_dir, noise_level=0.2)  # 0.2 정도면 꽤 많이 흔들림
+
