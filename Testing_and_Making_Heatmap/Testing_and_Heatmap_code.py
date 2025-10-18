@@ -78,8 +78,8 @@ grad_cam = GradCAM(model, target_layer)
 # 4. 테스트셋 평가 & 잘못된 샘플 저장
 # ---------------------
 number_class = len(classes) #라벨 갯수 저장
-correct_list = [0 for i in range(number_class)]  #맞은 것 개수세기 위한 리스트
-wrong_list = [0 for i in range(number_class)] #틀린 것 개수세기 위한 리스트
+correct_list = [0 for _ in range(number_class)]  #맞은 것 개수세기 위한 리스트
+wrong_list = [0 for _ in range(number_class)] #틀린 것 개수세기 위한 리스트
 max_correct_save = 5 #클래스별 최대 5개까지만 저장
 
 for idx, (image, label) in enumerate(test_loader):
