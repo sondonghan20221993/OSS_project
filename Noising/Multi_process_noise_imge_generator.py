@@ -1,16 +1,13 @@
 import cv2
 import os
-import time
 import functools
 from multiprocessing import Pool, cpu_count
 import numpy as np
 import importlib
-#--------------------------------------------- 데커레이터-----------------------------------------------#
-"""
-시간효율 확인하기 위해 수업에서 배운 데커레이터를 이용해서 시간을 측정해보자
-"""
+from Performance_timer import clock
 
-#--------------------------------------------이미지 경로들 읽어오는 함수---------------------------------#
+
+#이미지 경로들 읽어오는 함수
 def get_img_path(input_dir, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     img_path = []#작업할 이미지 경로 저장
@@ -29,11 +26,12 @@ def get_img_path(input_dir, output_dir):
             count +=1
             if(count == 100): break
     return img_path
-#--------------------------------------------함수 가져오기----------------------------------------------#
+
+#함수 가져오기
 def get_library(a):
     module = importlib.import_module(a)
   
-#---------------------------가져온 함수 + 이미지 경로 리스트로 이미지생성, 저장--------------------------#
+#가져온 함수 + 이미지 경로 리스트로 이미지생성, 저장
 def load_noise_maker(img_path, fun, output_dir):
     #cv2로 이미지 읽기
     img = cv2.imread(img_path)
@@ -61,7 +59,6 @@ def main():
     #멀티프로세싱 과정
     num_cores = cpu_count() 
     print(num_cores) 
-    start_time = time.time() 
     work_fun = functools.partial(use_noise_fun.add_pixel_noise, #-> 코드중 변형이미지 return하는 함수만 사용
                                     noise_level=0.1,
                                       min_val=0.05,
@@ -71,7 +68,6 @@ def main():
                                 output_dir = output_dir)
     with Pool(processes=num_cores) as pool: 
         pool.map(work_fun, work_img_path)  
-        print("t")
 if __name__ == "__main__":
     main()
 """

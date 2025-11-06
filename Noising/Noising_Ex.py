@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from Performance_timer import clock
 
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     """
@@ -22,6 +23,7 @@ def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     noisy_img = (noisy_img * 255).astype(np.uint8)
     return noisy_img
 
+@clock
 def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
     os.makedirs(output_dir, exist_ok=True)
 
