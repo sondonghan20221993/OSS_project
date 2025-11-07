@@ -2,15 +2,6 @@ import os
 import cv2
 import numpy as np
 
-def skip_if_no_image(func):
-    def wrapper(img, *args, **kwargs):
-        if img is None or not isinstance(img, np.ndarray):
-            print("⚠️ 경고: 유효한 이미지가 아닙니다. 변형을 건너뜁니다.")
-            return img
-        return func(img, *args, **kwargs)
-    return wrapper
-
-@skip_if_no_image
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     """
     img: 입력 이미지 (numpy array, 0~255)
