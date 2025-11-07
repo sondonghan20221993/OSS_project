@@ -58,20 +58,15 @@ def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
 
     #-------------------------------------변형과정-----------------------------------------#
     noised = img.copy() # 원본이미지 복사
-
     mask = (check_neighbors==1) & (count_neighbors>0)#resize_img에서 바꿀 픽셀값 정보
-    # 적용 ROI 가져오기
-    region = noised[start_row:end_row, start_col:end_col].copy()
-    h, w, c = region.shape
+    region = noised[start_row:end_row, start_col:end_col].copy() # 노이즈 적용할 영역 복사
+    h, w, c = region.shape # 영역 크기 정보
     pixel_size = 12  # ← 픽셀 크기 (값 키울수록 네모 큼)
     # 블록화
     small = cv2.resize(region, (w//pixel_size, h//pixel_size), interpolation=cv2.INTER_LINEAR)
     pixelated = cv2.resize(small, (w, h), interpolation=cv2.INTER_NEAREST)
-
-    # ✅ 노이즈 감지된 부분만 블록 적용
-    region[mask] = pixelated[mask]
-
-    noised[start_row:end_row, start_col:end_col] = region
+    region[mask] = pixelated[mask] # 노이즈 감지된 부분만 블록 적용
+    noised[start_row:end_row, start_col:end_col] = region # 노이즈 적용된 영역 복사
     noisy_img = (noised * 255).astype(np.uint8)
     return noisy_img
 
