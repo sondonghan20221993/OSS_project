@@ -1,63 +1,74 @@
 import os
 import cv2
 import numpy as np
-from queue import Queue
 from Performance_timer import clock
 
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     """
     img: 입력 이미지 (numpy array, 0~255)
-    noise_level: 노이즈 세기 (0~1, 예: 0.1 → 최대 ±0.1 변화)
     min_val, max_val: 픽셀 값 클리핑 범위 (정규화된 상태에서)
     """
     # 0~1 정규화
     img = img.astype(np.float32) / 255.0  
     
-    # 이미지 size 저장
+    ## 이미지 정보 추출(y,x,color)
     img_color = img.shape[2]
     img_col = img.shape[1]
     img_row = img.shape[0]
-    #탐색범위 지정
-    find_direction = ((1,0), (-1,0), (0,-1), (0,1))
-    coordinate_q = Queue()
-    #탐색 범위(얼굴줌심)
-    start_row = int(img_row*0.1)
-    end_row = int(img_row*0.9)
-    start_col = int(img_col*0.2)
-    end_col = int(img_col*0.8)
     
-    for color in range(img_color):
-        for row in range(start_row, end_row):
-            for col in range(start_col, end_col):
-                #현재 픽셀
-                now_pixel = img[row, col, color]
-                for row_r, col_c in find_direction:
-                    if(row + row_r>= img_row or row + row_r<0 or col+col_c >= img_col or col+col_c<0):
-                        continue
-                    else:
-                        compare_pixel = img[row + row_r, col+col_c, color]
-                        if(abs(now_pixel-compare_pixel)>=noise_level):
-                            coordinate_q.put([row, col, color])
-                            break
-    #변형
-    while(coordinate_q.empty() == False):
-        row, col, color = coordinate_q.get()
-        sum_pixel =0
-        count = 0
-        for row_r, col_c in find_direction:
-            if(row + row_r>= img_row or row + row_r<0 or col+col_c >= img_col or col+col_c<0):
-                continue
-            else:
-                sum_pixel += img[row + row_r, col+col_c, color]
-                count +=1
-        sum_pixel /= count
-        if(img[row, col, color] > sum_pixel):
-            img[row, col, color] +=sum_pixel* 0.1
-        else:
-            img[row, col, color] +=sum_pixel* 0.1
-    noisy_img = img
-    # 다시 0~255 범위로 변환
-    noisy_img =(noisy_img * 255).astype(np.uint8)
+    #탐색 범위(얼굴줌심으로 하기위해 범위 조정)
+    start_row = int(img_row * 0.3)
+    end_row = int(img_row * 0.7)
+    start_col = int(img_col * 0.3)
+    end_col = int(img_col * 0.7)
+
+    resize_img = img[start_row:end_row, start_col:end_col, :]
+
+    # numpy로 연산을 위한 numpy배열 선언
+    sum_neighbors = np.zeros_like(resize_img)
+    count_neighbors = np.zeros_like(resize_img)
+    check_neighbors = np.zeros_like(resize_img)
+
+    # 아래 연산
+    copy_img = resize_img.copy()
+    sum_neighbors[:-1,:,:] += resize_img[1:,:,:]  
+    count_neighbors[:-1,:,:] += 1
+    copy_img[:-1,:,:] -= resize_img[1:,:,:]
+    check_neighbors[:-1,:,:][abs(copy_img[:-1,:,:]) >= noise_level] = 1
+
+    # 위 연산
+    copy_img = resize_img.copy()
+    sum_neighbors[1:,:,:] += resize_img[:-1,:,:]
+    count_neighbors[1:,:,:] += 1
+    copy_img[1:,:,:] -= resize_img[:-1,:,:]
+    check_neighbors[1:,:,:][abs(copy_img[1:,:,:]) >= noise_level] = 1
+
+    # 왼쪽 연산
+    copy_img = resize_img.copy()
+    sum_neighbors[:,1:,:] += resize_img[:,:-1,:]
+    count_neighbors[:,1:,:] += 1
+    copy_img[:,1:,:] -= resize_img[:,:-1,:]
+    check_neighbors[:,1:,:][abs(copy_img[:,1:,:]) >= noise_level] = 1
+
+    # 오른쪽 연산
+    copy_img = resize_img.copy()
+    sum_neighbors[:,:-1,:] += resize_img[:,1:,:]
+    count_neighbors[:,:-1,:] += 1
+    copy_img[:,:-1,:] -= resize_img[:,1:,:]
+    check_neighbors[:,:-1,:][abs(copy_img[:,:-1,:]) >= noise_level] = 1
+
+    #-------------------------------------변형과정-----------------------------------------#
+    noised = img.copy() # 원본이미지 복사
+    mask = (check_neighbors==1) & (count_neighbors>0)#resize_img에서 바꿀 픽셀값 정보
+    region = noised[start_row:end_row, start_col:end_col].copy() # 노이즈 적용할 영역 복사
+    h, w, c = region.shape # 영역 크기 정보
+    pixel_size = 12  # ← 픽셀 크기 (값 키울수록 네모 큼)
+    # 블록화
+    small = cv2.resize(region, (w//pixel_size, h//pixel_size), interpolation=cv2.INTER_LINEAR)
+    pixelated = cv2.resize(small, (w, h), interpolation=cv2.INTER_NEAREST)
+    region[mask] = pixelated[mask] # 노이즈 감지된 부분만 블록 적용
+    noised[start_row:end_row, start_col:end_col] = region # 노이즈 적용된 영역 복사
+    noisy_img = (noised * 255).astype(np.uint8)
     return noisy_img
 
 @clock
@@ -82,4 +93,5 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 # ---------------- 사용 예시 ----------------
 input_dir = "dataset"          # 원본 폴더
 output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
+test_img_path = "dataset"  # 아무 이미지 하나
 apply_noise_to_dataset(input_dir, output_dir, noise_level=0.03)  # 0.03 정도면 일부 픽셀 변형됨
