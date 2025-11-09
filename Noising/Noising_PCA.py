@@ -4,23 +4,29 @@ import cv2
 import numpy as np  
 
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
-    """
-    img: 입력 이미지 (numpy array, 0~255)
-    noise_level: 노이즈 세기
-    min_val, max_val: 픽셀 값 클리핑 범위 (정규화된 상태에서)
-    """
-    """
-    주성분 분석:
-    이미지의 각 색상 채널(R, G, B)에 대해 PCA(주성분 분석)을 적용해서 해상도를 줄이고 다시 복원하는 과정
+    # 0~1 범위로 정규화
+    img_norm = img.astype(np.float32) / 255.0
 
-    코드자체는 짧아서 과정만 설명
-    PCA(n_components=0.97) -> 데이터 분산이 97%를 유지할 때 필요한 주성분 개수(데이터 97%만 남김)
-    pca.fit_transform -> 차원을 축소한다
-    pca.inverse_transform -> 축소한 차원을 다시 복원시킨다(이미지 흐려짐)
+    # PCA 객체 생성. n_components가 0과 1 사이의 float이면,
+    # 분산의 `noise_level` 비율만큼을 유지하는 데 필요한 주성분 개수를 자동으로 선택합니다.
+    pca = PCA(n_components=noise_level)
 
-    #주의점# 
-    color채널에 대한 PCA가 아닌 이미지 픽셀에 대한 PCA로 해야합니다.
-    """
+    # 이미지가 컬러인지 흑백인지 확인
+    if len(img.shape) == 3: # 컬러 이미지 (높이, 너비, 채널)
+        # B, G, R 채널로 분리
+        b, g, r = cv2.split(img_norm)
+        
+        # 각 채널에 대해 PCA 적용 및 복원
+        b_pca = pca.inverse_transform(pca.fit_transform(b))
+        g_pca = pca.inverse_transform(pca.fit_transform(g))
+        r_pca = pca.inverse_transform(pca.fit_transform(r))
+        
+        # 처리된 채널들을 하나로 합침
+        noisy_img = cv2.merge([b_pca, g_pca, r_pca])
+
+    else: # 흑백 이미지 (높이, 너비)
+        # 이미지 자체에 PCA 적용 및 복원
+        noisy_img = pca.inverse_transform(pca.fit_transform(img_norm))
 
     # [min_val, max_val] 범위로 클리핑
     noisy_img = np.clip(noisy_img, min_val, max_val)
@@ -51,3 +57,4 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 input_dir = "dataset"          # 원본 폴더
 output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
 apply_noise_to_dataset(input_dir, output_dir, noise_level=0.96)  # 0.96 정도면 꽤 많이 흔들림
+
