@@ -2,6 +2,7 @@ from sklearn.decomposition import PCA
 import os
 import cv2
 import numpy as np  
+from Performance_timer import clock
 
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     # 0~1 범위로 정규화
@@ -35,6 +36,7 @@ def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     noisy_img = (noisy_img * 255).astype(np.uint8)
     return noisy_img
 
+@clock
 def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
     os.makedirs(output_dir, exist_ok=True)
 
@@ -53,8 +55,11 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 
     print(f"✅ 모든 이미지에 픽셀 단위 노이즈 적용 완료! (noise_level={noise_level})")
 
-# ---------------- 사용 예시 ----------------
-input_dir = "dataset"          # 원본 폴더
-output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
-apply_noise_to_dataset(input_dir, output_dir, noise_level=0.96)  # 0.96 정도면 꽤 많이 흔들림
+if __name__ == "__main__":
+    # ---------------- 사용 예시 ----------------
+    input_dir = "dataset"          # 원본 폴더
+    output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
+    apply_noise_to_dataset(input_dir, output_dir, noise_level=0.96)  # 0.96 정도면 꽤 많이 흔들림
+
+
 
