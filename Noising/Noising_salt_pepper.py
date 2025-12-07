@@ -54,10 +54,12 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 
     print(f"✅ 모든 이미지에 픽셀 단위 노이즈 적용 완료! (noise_level={noise_level})")
 
-# ---------------- 사용 예시 ----------------
-#주소에 /가 아닌 \가 들어간다면 주소 앞에 r붙여야함 r"dataset"
-#-주의-  경로상에 한국어아 있을시 imread, imwrite가 작동하지 않는다.
-input_dir = "dataset"          # 원본 폴더
-output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
-apply_noise_to_dataset(input_dir, output_dir, noise_level=0.2)  # 0.2 정도면 꽤 많이 흔들림
+if __name__ == "__main__":
+    # ---------------- 사용 예시 ----------------
+    #주소에 /가 아닌 \가 들어간다면 주소 앞에 r붙여야함 r"dataset"
+    #-주의-  경로상에 한국어아 있을시 imread, imwrite가 작동하지 않는다.
+    input_dir = "dataset"          # 원본 폴더
+    output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
+    apply_noise_to_dataset(input_dir, output_dir, noise_level=0.2)  # 0.2 정도면 꽤 많이 흔들림
+
 
