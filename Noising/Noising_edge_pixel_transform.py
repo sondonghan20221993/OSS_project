@@ -94,5 +94,5 @@ if __name__ == "__main__":
     # ---------------- 사용 예시 ----------------
     input_dir = "dataset"          # 원본 폴더
     output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
+    apply_noise_to_dataset(input_dir, output_dir, noise_level=0.03)  # 0.03 정도면 일부 픽셀 변형됨
 
-apply_noise_to_dataset(input_dir, output_dir, noise_level=0.03)  # 0.03 정도면 일부 픽셀 변형됨
