@@ -19,17 +19,15 @@ def get_img_path(input_dir, output_dir):
             
         save_dir = os.path.join(output_dir, label)
         os.makedirs(save_dir, exist_ok=True) #저장 경로 폴더생성
-        count = 0
         for fname in os.listdir(label_dir):
             all_path = os.path.join(label_dir, fname) #전체경로 추출
             img_path.append(all_path)
-            count +=1
-            if(count == 100): break
     return img_path
 
 #함수 가져오기
 def get_library(a):
     module = importlib.import_module(a)
+    return module
   
 #가져온 함수 + 이미지 경로 리스트로 이미지생성, 저장
 def load_noise_maker(img_path, fun, output_dir):
@@ -51,7 +49,7 @@ def load_noise_maker(img_path, fun, output_dir):
 def main():
     #경로 지정
     input_dir = "D:/archive/deepfake_database/train" 
-    output_dir = r"D:\check_salt_pepper_test" 
+    output_dir = r"D:\blend_pepper_test" 
     work_img_path = get_img_path(input_dir, output_dir)
     #작업 노이즈 함수 지정
     use_noise_fun = get_library("Noising") #-> 사용할 노이즈함수 파일이름
