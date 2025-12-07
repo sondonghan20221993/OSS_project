@@ -92,5 +92,4 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 # ---------------- 사용 예시 ----------------
 input_dir = "dataset"          # 원본 폴더
 output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
-test_img_path = "dataset"  # 아무 이미지 하나
 apply_noise_to_dataset(input_dir, output_dir, noise_level=0.03)  # 0.03 정도면 일부 픽셀 변형됨
