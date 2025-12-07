@@ -1,6 +1,7 @@
 import os
 import cv2
 import numpy as np
+from Performance_timer import clock
 
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     """
@@ -89,7 +90,9 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
 
     print(f"✅ 모든 이미지에 픽셀 단위 노이즈 적용 완료! (noise_level={noise_level})")
 
-# ---------------- 사용 예시 ----------------
-input_dir = "dataset"          # 원본 폴더
-output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
+if __name__ == "__main__":
+    # ---------------- 사용 예시 ----------------
+    input_dir = "dataset"          # 원본 폴더
+    output_dir = "dataset_noisy"   # 노이즈 추가된 폴더
+
 apply_noise_to_dataset(input_dir, output_dir, noise_level=0.03)  # 0.03 정도면 일부 픽셀 변형됨
