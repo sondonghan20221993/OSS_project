@@ -1,7 +1,6 @@
 import os
 import cv2
 import numpy as np
-from Performance_timer import clock
 
 def add_pixel_noise(img, noise_level=0.1, min_val=0.05, max_val=0.95):
     """
