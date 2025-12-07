@@ -91,8 +91,8 @@ def apply_noise_to_dataset(input_dir, output_dir, noise_level=0.1):
             cv2.imwrite(os.path.join(save_dir, fname), noisy)
 
     print(f"✅ 모든 이미지에 픽셀 단위 노이즈 적용 완료! (noise_level={noise_level})")
-
-# ---------------- 사용 예시 ----------------
-input_dir = "dataset"          # 원본 폴더
-output_dir = "dataset_rotated"   # 노이즈 추가된 폴더
-apply_noise_to_dataset(input_dir, output_dir, noise_level=0.3)
+if __name__ == "__main__":
+    # ---------------- 사용 예시 ----------------
+    input_dir = "dataset"          # 원본 폴더
+    output_dir = "dataset_rotated"   # 노이즈 추가된 폴더
+    apply_noise_to_dataset(input_dir, output_dir, noise_level=0.3)
